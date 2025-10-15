@@ -35,7 +35,7 @@ def list_endpoints(resource_group, workspace_name):
     if endpoints:
         for endpoint in endpoints:
             name = endpoint.get('name', 'Unknown')
-            status = endpoint.get('provisioningState', 'Unknown')
+            status = endpoint.get('provisioning_state', 'Unknown')
             print(f"  📍 {name} (Status: {status})")
     else:
         print("  ❌ No endpoints found")
@@ -58,11 +58,12 @@ def list_models(resource_group, workspace_name):
     if models:
         for model in models:
             name = model.get('name', 'Unknown')
-            version = model.get('version', 'Unknown')
-            description = model.get('description', 'No description')
-            print(f"  🎯 {name} (v{version})")
-            if description and description != 'No description':
-                print(f"     {description}")
+            created_at = model.get('creation_context', {}).get('created_at', 'Unknown')
+            # Extract just the date/time without microseconds
+            if created_at != 'Unknown':
+                created_at = created_at.split('.')[0].replace('T', ' ')
+            print(f"  🎯 {name}")
+            print(f"     Created: {created_at}")
     else:
         print("  ❌ No models found")
     

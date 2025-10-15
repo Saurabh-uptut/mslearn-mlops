@@ -13,7 +13,7 @@ This directory contains scripts to test the deployed diabetes prediction model e
    ```bash
    az login
    ```
-4. **Python 3** installed (no additional dependencies required - uses only standard library modules)
+4. **python3 3** installed (no additional dependencies required - uses only standard library modules)
 5. **Deployed model endpoint** in Azure ML
 
 ## Files
@@ -28,12 +28,12 @@ This directory contains scripts to test the deployed diabetes prediction model e
 ### 1. Check Available Resources
 Before testing, see what endpoints and models exist:
 ```bash
-python3 list_resources.py
+python33 list_resources.py
 ```
 
 ### 2. Test an Endpoint
 ```bash
-python3 test_endpoint.py --endpoint-name <your-endpoint-name>
+python33 test_endpoint.py --endpoint-name <your-endpoint-name>
 ```
 
 ## Usage
@@ -41,13 +41,13 @@ python3 test_endpoint.py --endpoint-name <your-endpoint-name>
 ### Basic Usage
 
 ```bash
-python test_endpoint.py --endpoint-name <your-endpoint-name>
+python3 test_endpoint.py --endpoint-name <your-endpoint-name>
 ```
 
 ### With Custom Parameters
 
 ```bash
-python test_endpoint.py \
+python3 test_endpoint.py \
   --endpoint-name diabetes-endpoint \
   --resource-group rg-mlops-dev-ksh026 \
   --workspace-name mlw-diabetes-dev-ksh026 \
@@ -58,7 +58,7 @@ python test_endpoint.py \
 
 For production endpoint:
 ```bash
-python test_endpoint.py \
+python3 test_endpoint.py \
   --endpoint-name diabetes-prod-endpoint \
   --resource-group rg-mlops-prod-ksh026 \
   --workspace-name mlw-diabetes-prod-ksh026
@@ -123,7 +123,7 @@ This is the most common issue and means you need to deploy a model first.
 
 1. **Check what exists:**
    ```bash
-   python3 list_resources.py
+   python33 list_resources.py
    ```
 
 2. **If no endpoints exist:**
