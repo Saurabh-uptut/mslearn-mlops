@@ -71,7 +71,7 @@ jobs:
       run: |
         echo "Finding latest model in workspace..."
         # Use simple query to get the latest model name - Azure CLI handles sorting
-        MODEL_NAME=$(az ml model list --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --query "[0].name" -o tsv --order-by creation_context.created_at desc)
+        MODEL_NAME=$(az ml model list --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --query "[0].name" -o tsv)
         
         # If that fails, try without ordering
         if [ -z "$MODEL_NAME" ] || [ "$MODEL_NAME" = "null" ]; then
