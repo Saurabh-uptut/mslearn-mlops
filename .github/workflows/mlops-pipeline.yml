@@ -70,9 +70,15 @@ jobs:
       id: get-model
       run: |
         echo "Finding latest model in workspace..."
-        # Get all models and extract the first one (usually latest)
-        MODELS_JSON=$(az ml model list --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --output json)
-        MODEL_NAME=$(echo "$MODELS_JSON" | grep '"name"' | head -1 | cut -d'"' -f4)
+        # Use simple query to get the latest model name - Azure CLI handles sorting
+        MODEL_NAME=$(az ml model list --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --query "[0].name" -o tsv --order-by creation_context.created_at desc)
+        
+        # If that fails, try without ordering
+        if [ -z "$MODEL_NAME" ] || [ "$MODEL_NAME" = "null" ]; then
+          echo "Trying fallback without ordering..."
+          MODEL_NAME=$(az ml model list --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --query "[0].name" -o tsv)
+        fi
+        
         echo "Latest model: $MODEL_NAME"
         if [ -z "$MODEL_NAME" ] || [ "$MODEL_NAME" = "null" ] || [ "$MODEL_NAME" = "" ]; then
           echo "No models found in workspace"
