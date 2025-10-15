@@ -32,7 +32,7 @@ data "azurerm_client_config" "current" {}
 
 # Resource Group
 resource "azurerm_resource_group" "mlops" {
-  name     = "rg-mlops-${var.environment}"
+  name     = "rg-mlops-${var.environment}-${random_string.suffix.result}"
   location = var.location
 
   tags = {
@@ -44,7 +44,7 @@ resource "azurerm_resource_group" "mlops" {
 
 # Application Insights for monitoring
 resource "azurerm_application_insights" "mlops" {
-  name                = "appi-mlops-${var.environment}"
+  name                = "appi-mlops-${var.environment}-${random_string.suffix.result}"
   location            = azurerm_resource_group.mlops.location
   resource_group_name = azurerm_resource_group.mlops.name
   application_type    = "web"
@@ -89,12 +89,13 @@ resource "azurerm_storage_account" "mlops" {
 
 # Azure Machine Learning Workspace
 resource "azurerm_machine_learning_workspace" "mlops" {
-  name                    = "mlw-diabetes-${var.environment}"
-  location                = azurerm_resource_group.mlops.location
-  resource_group_name     = azurerm_resource_group.mlops.name
-  application_insights_id = azurerm_application_insights.mlops.id
-  key_vault_id            = azurerm_key_vault.mlops.id
-  storage_account_id      = azurerm_storage_account.mlops.id
+  name                          = "mlw-diabetes-${var.environment}-${random_string.suffix.result}"
+  location                      = azurerm_resource_group.mlops.location
+  resource_group_name           = azurerm_resource_group.mlops.name
+  application_insights_id       = azurerm_application_insights.mlops.id
+  key_vault_id                  = azurerm_key_vault.mlops.id
+  storage_account_id            = azurerm_storage_account.mlops.id
+  public_network_access_enabled = true
 
   identity {
     type = "SystemAssigned"
