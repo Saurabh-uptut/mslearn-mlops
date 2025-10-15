@@ -70,10 +70,11 @@ jobs:
       id: get-model
       run: |
         echo "Finding latest model in workspace..."
-        # Get the most recently created model by creation time
-        MODEL_NAME=$(az ml model list --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --query "max_by([], creation_context.created_at).name" -o tsv)
+        # Get all models and extract the first one (usually latest)
+        MODELS_JSON=$(az ml model list --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --output json)
+        MODEL_NAME=$(echo "$MODELS_JSON" | grep '"name"' | head -1 | cut -d'"' -f4)
         echo "Latest model: $MODEL_NAME"
-        if [ -z "$MODEL_NAME" ] || [ "$MODEL_NAME" = "null" ]; then
+        if [ -z "$MODEL_NAME" ] || [ "$MODEL_NAME" = "null" ] || [ "$MODEL_NAME" = "" ]; then
           echo "No models found in workspace"
           exit 1
         fi
