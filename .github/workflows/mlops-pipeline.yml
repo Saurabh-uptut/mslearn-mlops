@@ -69,10 +69,12 @@ jobs:
     - name: Verify diabetes-model exists
       run: |
         echo "Checking if diabetes-model exists..."
-        az ml model show --name diabetes-model --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" || {
+        MODEL_EXISTS=$(az ml model list --name diabetes-model --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --query "length(@)" -o tsv)
+        if [ "$MODEL_EXISTS" -eq 0 ]; then
           echo "diabetes-model not found, this might be expected on first run"
           exit 1
-        }
+        fi
+        echo "diabetes-model found with $MODEL_EXISTS version(s)"
     - name: Deploy model to endpoint
       run: |
         echo "Deploying diabetes-model to endpoint..."

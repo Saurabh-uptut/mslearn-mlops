@@ -24,11 +24,11 @@ def main(args):
 
     # train model
     model = train_model(args.reg_rate, X_train, X_test, y_train, y_test)
-    
+
     # Explicitly log and register the model with a consistent name
     import mlflow.sklearn
     mlflow.sklearn.log_model(
-        model, 
+        model,
         "model",
         registered_model_name="diabetes-model"
     )
@@ -55,7 +55,8 @@ def split_data(df):
 
 def train_model(reg_rate, X_train, X_test, y_train, y_test):
     # train model
-    model = LogisticRegression(C=1/reg_rate, solver="liblinear").fit(X_train, y_train)
+    model = LogisticRegression(C=1/reg_rate, solver="liblinear")
+    model.fit(X_train, y_train)
     return model
 
 
