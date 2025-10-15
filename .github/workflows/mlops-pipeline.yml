@@ -66,6 +66,22 @@ jobs:
     - name: Create or update endpoint
       run: |
         az ml online-endpoint create --file src/endpoint.yml --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" || echo "Endpoint already exists"
+    - name: Get latest model name
+      id: get-model
+      run: |
+        MODEL_NAME=$(az ml model list --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --query "[0].name" -o tsv)
+        echo "Latest model: $MODEL_NAME"
+        if [ -z "$MODEL_NAME" ] || [ "$MODEL_NAME" = "null" ]; then
+          echo "No models found in workspace"
+          exit 1
+        fi
+        echo "model-name=$MODEL_NAME" >> $GITHUB_OUTPUT
+    - name: Create deployment with latest model
+      run: |
+        MODEL_NAME="${{ steps.get-model.outputs.model-name }}"
+        echo "Deploying model: $MODEL_NAME"
+        sed "s|model: azureml:.*@latest|model: azureml:$MODEL_NAME@latest|g" src/deployment.yml > deployment-temp.yml
+        cat deployment-temp.yml
     - name: Deploy model to endpoint
       run: |
-        az ml online-deployment create --file src/deployment.yml --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --all-traffic
+        az ml online-deployment create --file deployment-temp.yml --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --all-traffic
