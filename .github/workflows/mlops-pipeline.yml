@@ -65,17 +65,28 @@ jobs:
         creds: ${{secrets.AZURE_CREDENTIALS}}
     - name: Create or update endpoint
       run: |
-        az ml online-endpoint create --file src/endpoint.yml --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" || echo "Endpoint already exists"
-    - name: Verify diabetes-model exists
+        az ml online-endpoint create --file src/endpoint.yml --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" 2>/dev/null || echo "Endpoint already exists"
+    - name: Get latest model name
+      id: get-model
       run: |
-        echo "Checking if diabetes-model exists..."
-        MODEL_EXISTS=$(az ml model list --name diabetes-model --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --query "length(@)" -o tsv)
-        if [ "$MODEL_EXISTS" -eq 0 ]; then
-          echo "diabetes-model not found, this might be expected on first run"
+        echo "Finding latest model in workspace..."
+        # Get the most recently created model by creation time
+        MODEL_NAME=$(az ml model list --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --query "max_by([], creation_context.created_at).name" -o tsv)
+        echo "Latest model: $MODEL_NAME"
+        if [ -z "$MODEL_NAME" ] || [ "$MODEL_NAME" = "null" ]; then
+          echo "No models found in workspace"
           exit 1
         fi
-        echo "diabetes-model found with $MODEL_EXISTS version(s)"
+        echo "model-name=$MODEL_NAME" >> $GITHUB_OUTPUT
+    - name: Create deployment with latest model
+      run: |
+        MODEL_NAME="${{ steps.get-model.outputs.model-name }}"
+        echo "Deploying model: $MODEL_NAME"
+        # Replace placeholder with actual model name
+        sed "s|PLACEHOLDER_MODEL_NAME|$MODEL_NAME|g" src/deployment.yml > deployment-temp.yml
+        echo "Generated deployment configuration:"
+        cat deployment-temp.yml
     - name: Deploy model to endpoint
       run: |
-        echo "Deploying diabetes-model to endpoint..."
-        az ml online-deployment create --file src/deployment.yml --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --all-traffic
+        echo "Deploying to endpoint..."
+        az ml online-deployment create --file deployment-temp.yml --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --all-traffic
