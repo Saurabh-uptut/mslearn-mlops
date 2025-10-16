@@ -16,14 +16,20 @@ def init():
     )
 
     try:
-        # Load the MLflow model - it should be in the model directory
-        if os.path.exists(os.path.join(model_dir, 'model.pkl')):
+        # Check if there's a model subdirectory (common in Azure ML)
+        model_subdir = os.path.join(model_dir, 'model')
+        if os.path.exists(model_subdir):
+            # Load the MLflow model from the model subdirectory
+            model = mlflow.sklearn.load_model(f"file://{model_subdir}")
+            logging.info(f"Model loaded successfully from {model_subdir}")
+        elif os.path.exists(os.path.join(model_dir, 'MLmodel')):
+            # Load directly from model directory if MLmodel exists
             model = mlflow.sklearn.load_model(f"file://{model_dir}")
+            logging.info(f"Model loaded successfully from {model_dir}")
         else:
-            # Alternative path - try loading the entire directory as MLflow
+            # Fallback: try loading from the main directory
             model = mlflow.sklearn.load_model(f"file://{model_dir}")
-
-        logging.info(f"Model loaded successfully from {model_dir}")
+            logging.info(f"Model loaded successfully from {model_dir}")
 
     except Exception as e:
         logging.error(f"Error loading model from {model_dir}: {str(e)}")
