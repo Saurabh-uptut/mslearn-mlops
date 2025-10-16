@@ -3,6 +3,11 @@ name: MLOps pipeline
 on:
   workflow_dispatch:
 
+env:
+  RESOURCE_GROUP: "rg-mlops-dev-ksh026"
+  WORKSPACE_NAME: "mlw-diabetes-dev-ksh026"
+  DATA_ASSET_NAME: "diabetes-dev-folder"
+
 jobs:
   linting:
     runs-on: ubuntu-latest
@@ -46,9 +51,9 @@ jobs:
         creds: ${{secrets.AZURE_CREDENTIALS}}
     - name: Create data asset
       run: |
-        az ml data create --name diabetes-dev-folder --version 1 --type uri_folder --path experimentation/data --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" || echo "Data asset already exists"
+        az ml data create --name ${{ env.DATA_ASSET_NAME }} --version 1 --type uri_folder --path experimentation/data --resource-group "${{ env.RESOURCE_GROUP }}" --workspace-name "${{ env.WORKSPACE_NAME }}" || echo "Data asset already exists"
     - name: Trigger Azure ML job
-      run: az ml job create --file src/job.yml --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026"
+      run: az ml job create --file src/job.yml --resource-group "${{ env.RESOURCE_GROUP }}" --workspace-name "${{ env.WORKSPACE_NAME }}"
   
   deploy-endpoint:
     runs-on: ubuntu-latest
@@ -65,35 +70,8 @@ jobs:
         creds: ${{secrets.AZURE_CREDENTIALS}}
     - name: Create or update endpoint
       run: |
-        az ml online-endpoint create --file src/endpoint.yml --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" 2>/dev/null || echo "Endpoint already exists"
-    - name: Get latest model name
-      id: get-model
-      run: |
-        echo "Finding latest model in workspace..."
-        # Use simple query to get the latest model name - Azure CLI handles sorting
-        MODEL_NAME=$(az ml model list --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --query "[0].name" -o tsv)
-        
-        # If that fails, try without ordering
-        if [ -z "$MODEL_NAME" ] || [ "$MODEL_NAME" = "null" ]; then
-          echo "Trying fallback without ordering..."
-          MODEL_NAME=$(az ml model list --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --query "[0].name" -o tsv)
-        fi
-        
-        echo "Latest model: $MODEL_NAME"
-        if [ -z "$MODEL_NAME" ] || [ "$MODEL_NAME" = "null" ] || [ "$MODEL_NAME" = "" ]; then
-          echo "No models found in workspace"
-          exit 1
-        fi
-        echo "model-name=$MODEL_NAME" >> $GITHUB_OUTPUT
-    - name: Create deployment with latest model
-      run: |
-        MODEL_NAME="${{ steps.get-model.outputs.model-name }}"
-        echo "Deploying model: $MODEL_NAME"
-        # Replace placeholder with actual model name
-        sed "s|PLACEHOLDER_MODEL_NAME|$MODEL_NAME|g" src/deployment.yml > deployment-temp.yml
-        echo "Generated deployment configuration:"
-        cat deployment-temp.yml
+        az ml online-endpoint create --file src/endpoint.yml --resource-group "${{ env.RESOURCE_GROUP }}" --workspace-name "${{ env.WORKSPACE_NAME }}" 2>/dev/null || echo "Endpoint already exists"
     - name: Deploy model to endpoint
       run: |
         echo "Deploying to endpoint..."
-        az ml online-deployment create --file deployment-temp.yml --resource-group "rg-mlops-dev-ksh026" --workspace-name "mlw-diabetes-dev-ksh026" --all-traffic
+        az ml online-deployment create --file src/deployment.yml --resource-group "${{ env.RESOURCE_GROUP }}" --workspace-name "${{ env.WORKSPACE_NAME }}" --all-traffic
