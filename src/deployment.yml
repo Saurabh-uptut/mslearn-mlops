@@ -5,3 +5,6 @@ model: azureml:diabetes-model@latest
 instance_type: Standard_E2s_v3
 instance_count: 1
 environment: azureml:AzureML-sklearn-1.1-ubuntu20.04-py38-cpu@latest
+code_configuration:
+  code: src
+  scoring_script: main.py
