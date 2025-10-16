@@ -4,4 +4,4 @@ endpoint_name: diabetes-endpoint
 model: azureml:diabetes-model@latest
 instance_type: Standard_E2s_v3
 instance_count: 1
-environment: azureml:AzureML-sklearn-0.24-ubuntu18.04-py37-cpu@latest
+environment: azureml:AzureML-sklearn-1.1-ubuntu20.04-py38-cpu@latest
