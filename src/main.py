@@ -20,7 +20,7 @@ def init():
         if os.path.exists(os.path.join(model_dir, 'model.pkl')):
             model = mlflow.sklearn.load_model(f"file://{model_dir}")
         else:
-            # Alternative path - try loading the entire directory as MLflow model
+            # Alternative path - try loading the entire directory as MLflow
             model = mlflow.sklearn.load_model(f"file://{model_dir}")
 
         logging.info(f"Model loaded successfully from {model_dir}")
