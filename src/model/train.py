@@ -48,6 +48,13 @@ def split_data(df):
             'TricepsThickness', 'SerumInsulin', 'BMI', 'DiabetesPedigree',
             'Age']].values
     y = df['Diabetic'].values
+
+    # Handle empty dataframe case
+    if len(df) == 0:
+        import numpy as np
+        return (np.array([]).reshape(0, 8), np.array([]).reshape(0, 8),
+                np.array([]), np.array([]))
+
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.30, random_state=0)
     return X_train, X_test, y_train, y_test

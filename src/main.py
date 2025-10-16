@@ -4,6 +4,9 @@ import logging
 import json
 import os
 
+# Global model variable
+model = None
+
 
 def init():
     """Initialize the model for inference."""
@@ -38,6 +41,12 @@ def init():
 
 def run(raw_data):
     """Run inference on the input data."""
+    # Check if model is initialized
+    if model is None:
+        error_msg = "Model not initialized. Call init() first."
+        logging.error(error_msg)
+        return {"error": error_msg, "success": False}
+
     try:
         # Parse the input data
         data = json.loads(raw_data)
